@@ -1,0 +1,15 @@
+{
+    "files.associations": {
+        "argus.h": "c",
+        "uart_api.h": "c",
+        "stdio.h": "c",
+        "chrono": "c",
+        "random": "c",
+        "cstdint": "cpp",
+        "assert.h": "c",
+        "irq.h": "c",
+        "main.h": "c",
+        "uart.h": "c",
+        "hal_data.h": "c"
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "d:/Program Files/AFBR-S50-API/AFBR-S50/Include",
+                "d:/Program Files/AFBR-S50-API/Sources/Platform/Renesas_RA4M2"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ]
+        }
+    ],
+    "version": 4
+}
