@@ -11,7 +11,7 @@
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}.exe",
                 "-I",
-                "D:/boost_1_88_0",
+                "D:/Program Files/boost_1_88_0",
                 "-lws2_32"
             ],
             "options": {
