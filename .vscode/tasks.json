@@ -2,20 +2,17 @@
     "tasks": [
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc.exe build active file",
-            "command": "C:\\msys64\\ucrt64\\bin\\gcc.exe",
+            "label": "C/C++: g++.exe build active file",
+            "command": "C:\\msys64\\ucrt64\\bin\\g++.exe",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "${fileDirname}/${fileBasenameNoExtension}.exe",
                 "-I",
-                "d:/Program Files/AFBR-S50-API/AFBR-S50/Include",
-                "-I",
-                "d:/Program Files/AFBR-S50-API/Sources/Platform/Renesas_RA4M2",
-                "-L",
-                "d:/Program Files/AFBR-S50-API/AFBR-S50/Lib/libafbrs50_m4.a",
+                "D:/boost_1_88_0",
+                "-lws2_32"
             ],
             "options": {
                 "cwd": "${fileDirname}"

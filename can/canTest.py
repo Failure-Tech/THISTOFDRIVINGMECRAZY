@@ -10,6 +10,9 @@ QUERY = 0x1C
 
 class TOF:
     
+    # default bitrate will be 1 Mbps (1 million bits)
+    # this is unlikely to change so you can make this a constant integer in C++
+    # port will be a string such as "COM6"
     def __init__(self, port, br = 1000000):
 
         self.bitrate = br
@@ -42,6 +45,7 @@ class TOF:
     def stopMeasurements(self):
         
         # crafts remote (empty) frame for STOP address with no data
+        # I assume the message datatype will be a struct in C++
         message = can.Message(arbitration_id = STOP, is_remote_frame = True, dlc = 0, is_extended_id = False)
         
         try:
@@ -62,6 +66,7 @@ class TOF:
         # Add UTC time to data output
 
         # blocks the program until a message is recieved (unless the time extends pasr the timeout of 2 seconds)
+        # the repsonse is a byte array in python
         response = self.interface.recv(timeout = 2)
 
         # extracts data from message

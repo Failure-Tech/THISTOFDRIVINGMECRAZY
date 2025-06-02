@@ -4,14 +4,16 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "d:/Program Files/AFBR-S50-API/AFBR-S50/Include",
-                "d:/Program Files/AFBR-S50-API/Sources/Platform/Renesas_RA4M2"
+                "D:/boost_1_88_0"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
-            ]
+            ],
+            "cStandard": "c17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "windows-gcc-x64"
         }
     ],
     "version": 4
