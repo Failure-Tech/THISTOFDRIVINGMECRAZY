@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 
+// Setting up namespace here so its easier to right out for syntax (I'm kinda lazy)
 namespace asio = boost::asio;
 using asio::serial_port;
 
@@ -19,7 +20,7 @@ class TofSensor {
                 serial_.set_option(serial_port::flow_control(serial_port::flow_control::none));
 
                 send_command("S8\r"); // Set bitrate to 1mbps
-                sesnd_command("0\r"); // opening the channel
+                send_command("0\r"); // opening the channel
             }
 
             void startMeasurements() {
@@ -30,6 +31,7 @@ class TofSensor {
                 send_remote_frame(0x09); // stop byte address cmd
             }
 
+            // beginning an asynchronoous reading operation of data
             void asyncReadStart() {
                 serial_.async_read_some(asio::buffer(read_buf_),
                     boost::bind(&TofSensor::handleRead, this,
@@ -39,28 +41,32 @@ class TofSensor {
 
     private:
             serial_port serial_;
-            asio:stead_timer timer_;
-            std::array<char, 256> read_buf_;
-            std::string read_buffer_;
+            asio:steady_timer timer_;
+            std::array<char, 256> read_buf_; // buffer for async read
+            std::string read_buffer_; // a string buffer to help accumlate the data
 
+            // test sending a raw command string to the serial port
             void send_command(const std::string& cmd) {
                 asio::write(serial_, asio::buffer(cmd.c_str(), cmd.size()));
             }
 
+            // Sending a remote CAN frame using the SLCAN frame format
             void send_remote_frame(uint32_t can_id) {
                 std::ostringstream cmd;
                 cmd << "R" << std::hex << std::setw(3) << std::setfill('0') << can_id << "\r";
                 send_command(cmd.str());
             }
 
+            // Callback for when the async read does actually receive any data
             void handleRead(const boost::system::error_code& ec, size_t bytes) {
                 if (!ec) {
-                    read_buffer_.append(read_buf_.data(), bytes);
-                    processBuffer();
-                    asyncReadStart();
+                    read_buffer_.append(read_buf_.data(), bytes); // Appending the received bytes to the buffer
+                    processBuffer(); // Parsing complete messages
+                    asyncReadStart(); // continue reading more data
                 }
             }
 
+            // extracting out full CAN frames from the buffer and parsing through them
             void processBuffer() {
                 size_t pos;
                 while ((pos = read_buffer_.find('\r')) != std::string::npos) {
@@ -73,11 +79,12 @@ class TofSensor {
                 }
             }
 
+            // Parsing a single CAN frame string and interpreting it if it is relevant
             void parseCanFrame(const std::string& frame) {
                 uint32_t id;
                 std::istringstream(frame.substr(1, 3)) >> std::hex >> id;
 
-                if (id == 0x01C) {
+                if (id == 0x01C) { // If frame is from that address (so ToF sensor)
                     std::vector<uint8_t> data;
                     for (size_t i = 4; i < frame.size(); i+=2) {
                         uint8_t byte;
@@ -91,20 +98,22 @@ class TofSensor {
                 }
             }
 
+            // Pretty much the same implenetation as in the canTest.py file, just with type definitions and such
             void interpretMeasurements(const std::vector<uint8_t>& meas) {
                 double distance = (meas[0] << 16 | meas[1] << 8 | meas[2]);
-                distance = distance/16384.0;
+                distance = distance/16384.0; // scale distance
 
                 double amplitude = (meas[3] << 8 | meas[4]);
-                amplitude = amplitude/16.0;
+                amplitude = amplitude/16.0; // scale ampltitude
 
                 uint8_t signal_quality = meas[5];
-                int16_t status = (meas[6] << 8 | meas[7]);
+                int16_t status = (meas[6] << 8 | meas[7]); // handling in signed status
 
                 if (status >= 0x8000) {
                     status -= 0x10000;
                 }
 
+                // outputting measurement vals
                 std::cout << "Distance: " << distance << std::endl << "Amplitude: " << amplitude << std::endl << "Status: " << status << std::endl;
             }
 };
@@ -113,17 +122,17 @@ int main (int argc, char** argv) {
     try {
         asio::io_context io;
         TofSensor sensor(io);
-        sensor.asyncReadStart();
-        sensor.startMeasurements();
+        sensor.asyncReadStart(); // start reading in data
+        sensor.startMeasurements(); // begin ToF measurements
 
-        std::thread([&io]() { io.run(); }).detach();
-        std::this_thread::sleep_for(std::chrono::seconds(20));
+        std::thread([&io]() { io.run(); }).detach(); // Run the IO
+        std::this_thread::sleep_for(std::chrono::seconds(20)); // Let it run for 20s first
 
-        sensor.stopMeasurements();
-        io.stop();
+        sensor.stopMeasurements(); // Stop ToF readings
+        io.stop(); // also stop IO
     }
     catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << std::endl; // Print out any exceptions/errors
     }
     
     return 0;
